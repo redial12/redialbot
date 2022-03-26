@@ -1,6 +1,3 @@
-from main import CONDITION_ONE
-from main import CONDITION_TWO
-
 class Person:
 
     def __init__(self, h, l, f, s):
@@ -16,4 +13,4 @@ class Person:
         print("Second condition: " + str(self.second_condition))
     
     def to_string(self):
-        return("Handle: " + self.handle + "\n" + "Link: " + self.link + "\n" + str(CONDITION_ONE) + ": " + str(self.first_condition) + "\n" + str(CONDITION_TWO) + ": " + str(self.second_condition) + "\n")
+        return("Handle: " + self.handle + "\n" + "Link: " + self.link + "\n" + "FIRST_CONDITION: " + str(self.first_condition) + "\n" + "SECOND_CONDITION: " + str(self.second_condition) + "\n")
