@@ -42,7 +42,7 @@ def get_handle(text):
 
 def get_bio():
     # if the post does not have a bio, return an empty String
-    notPresent = driver.find_elements(By.CSS_SELECTOR, "._7UhW9.xLCgt.MMzan.KV-D4.se6yk.T0kll").size() < 1
+    notPresent = len(driver.find_elements(By.CSS_SELECTOR, "._7UhW9.xLCgt.MMzan.KV-D4.se6yk.T0kll")) < 1
     if(notPresent):
         return ""
     #otherwise get the bio, convert to lowercase, remove emojis, and return
