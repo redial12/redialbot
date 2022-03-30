@@ -11,17 +11,23 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from Person import Person
-from settings import USERNAME, PASSWORD, PAGE, KEYWORD_ONE, KEYWORD_TWO
 
+#setting driver selenium is running off of and initializing some variables used across the methods
+global driver
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+global file
 file = open("data.txt", "w")
+global list
 list = []
+global linklist
 linklist = []
 
+#replaces all emojis with an empty character
 def strip_emoji(text):
     new_text = emoji.replace_emoji(text, replace='')
     return new_text
 
+#returns handle starting with an '@'
 def get_handle(text):
     text_split = text.split(" ")
 
@@ -35,29 +41,34 @@ def get_handle(text):
     return "NO_HANDLE"
 
 def get_bio():
+    # if the post does not have a bio, return an empty String
+    notPresent = driver.find_elements(By.CSS_SELECTOR, "._7UhW9.xLCgt.MMzan.KV-D4.se6yk.T0kll").size() < 1
+    if(notPresent):
+        return ""
+    #otherwise get the bio, convert to lowercase, remove emojis, and return
     postbio = driver.find_element(By.CSS_SELECTOR, "._7UhW9.xLCgt.MMzan.KV-D4.se6yk.T0kll")
     posttext = postbio.text.lower()
     return strip_emoji(posttext)
 
+# gets all posts in list and converts them to a list of links
 def add_to_list():
     posts_list = driver.find_elements(By.CSS_SELECTOR, ".v1Nh3.kIKUG._bz0w [href]")
-
     for x in range(len(posts_list)):
         if(posts_list[x].get_attribute("href") not in linklist):
             linklist.append(posts_list[x].get_attribute("href"))
 
-
-def create_data():
+def create_data(first, second):
     for x in range(len(linklist)):
 
+        # gets list of post links
         driver.get(linklist[x])
 
         time.sleep(2)
         #get post text next
         posttext = get_bio()
 
-        #gets condition (from user soon)
-        condition = [KEYWORD_ONE, KEYWORD_TWO]
+        #gets condition and checks for it in instagram bio
+        condition = [first, second]
 
         CONDITION_ONE = condition[0] in posttext
         CONDITION_TWO = condition[1] in posttext
@@ -67,6 +78,7 @@ def create_data():
 
         #adds object to a list
         list.append(Person(handle, linklist[x], CONDITION_ONE, CONDITION_TWO))
+        #prints object values and writes them to file
         list[x].display()
         file.write(list[x].to_string())
 
@@ -90,27 +102,28 @@ def scroll_bottom():
             break
         last_height = new_height
 
-driver.delete_all_cookies()
+def botting(username, password, page, first, second):
+    driver.delete_all_cookies()
 
-driver.get('https://www.instagram.com/accounts/login/?next=/' + PAGE + '/')
+    driver.get('https://www.instagram.com/accounts/login/?next=/' + page + '/')
 
-delay = 10
-time.sleep(4)
-driver.find_element(By.NAME, "username").send_keys(USERNAME)
-driver.find_element(By.NAME, "password").send_keys(PASSWORD)
-#login button
-driver.find_element(By.XPATH, "/html/body/div[1]/section/main/div/div/div[1]/div/form/div/div[3]/button").click()
-time.sleep(2)
-#save login info? - not now
-driver.find_element(By.CSS_SELECTOR, ".sqdOP.yWX7d.y3zKF").click()
-time.sleep(3)
-#scroll then get all posts
+    time.sleep(4)
+    driver.find_element(By.NAME, "username").send_keys(username)
+    driver.find_element(By.NAME, "password").send_keys(password)
+    #login button
+    driver.find_element(By.XPATH, "/html/body/div[1]/section/main/div/div/div[1]/div/form/div/div[3]/button").click()
+    time.sleep(3)
+    #save login info? - not now
+    driver.find_element(By.CSS_SELECTOR, ".sqdOP.yWX7d.y3zKF").click()
+    time.sleep(3)
+    #scroll then get all posts
 
-scroll_bottom()
+    scroll_bottom()
 
-print(linklist)
+    print(linklist)
 
-create_data()
+    create_data(first, second)
 
-driver.quit()
+    #closes chrome
+    driver.quit()
 
