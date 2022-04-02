@@ -13,10 +13,9 @@ from selenium.webdriver.common.by import By
 from Person import Person
 
 #setting driver selenium is running off of and initializing some variables used across the methods
-global driver
-driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+
 global file
-file = open("data.txt", "w")
+file = open("data.txt", "w", encoding="utf-8")
 global list
 list = []
 global linklist
@@ -82,6 +81,21 @@ def create_data(first, second):
         list[x].display()
         file.write(list[x].to_string())
 
+    
+def create_data_captions():
+    for x in range(len(linklist)):
+    # gets list of post links
+        driver.get(linklist[x])
+
+        time.sleep(2)
+        #get post text next
+        posttext = get_bio()
+
+        #prints caption text and writes them to file
+        print(posttext + "\nLink: " + linklist[x] + "\n" + "=================")
+        file.write(posttext + "\nLink: " + linklist[x] + "\n" + "=================\n")
+    pass
+
 def scroll_bottom():
     SCROLL_PAUSE_TIME = 3
 
@@ -103,6 +117,8 @@ def scroll_bottom():
         last_height = new_height
 
 def botting(username, password, page, first, second):
+    global driver
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
     driver.delete_all_cookies()
 
     driver.get('https://www.instagram.com/accounts/login/?next=/' + page + '/')
@@ -123,6 +139,33 @@ def botting(username, password, page, first, second):
     print(linklist)
 
     create_data(first, second)
+
+    #closes chrome
+    driver.quit()
+
+def botting_captions(username, password, page):
+    global driver
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+    driver.delete_all_cookies()
+
+    driver.get('https://www.instagram.com/accounts/login/?next=/' + page + '/')
+
+    time.sleep(4)
+    driver.find_element(By.NAME, "username").send_keys(username)
+    driver.find_element(By.NAME, "password").send_keys(password)
+    #login button
+    driver.find_element(By.XPATH, "/html/body/div[1]/section/main/div/div/div[1]/div/form/div/div[3]/button").click()
+    time.sleep(3)
+    #save login info? - not now
+    driver.find_element(By.CSS_SELECTOR, ".sqdOP.yWX7d.y3zKF").click()
+    time.sleep(3)
+    #scroll then get all posts
+
+    scroll_bottom()
+
+    print(linklist)
+
+    create_data_captions()
 
     #closes chrome
     driver.quit()
