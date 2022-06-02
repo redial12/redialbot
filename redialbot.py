@@ -1,4 +1,5 @@
 import time
+import os
 import re
 from venv import create
 import emoji
@@ -11,11 +12,9 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from Person import Person
+from datetime import datetime
 
-#setting driver selenium is running off of and initializing some variables used across the methods
-
-global file
-file = open("data.txt", "w", encoding="utf-8")
+#opens data file for writing
 global list
 list = []
 global linklist
@@ -57,6 +56,12 @@ def add_to_list():
             linklist.append(posts_list[x].get_attribute("href"))
 
 def create_data(first, second):
+    now = datetime.now()
+    file_name = now.strftime("%d%m%y_%H%M%S")
+    file = open(file_name, "x", encoding="utf-8")
+    #get number of posts botted
+    file.write("Successfully retrieved " + str(len(linklist)) + " posts!" + "\n")
+
     for x in range(len(linklist)):
 
         # gets list of post links
@@ -83,7 +88,17 @@ def create_data(first, second):
 
     
 def create_data_captions():
+    now = datetime.now()
+    global file_name
+    file_name = now.strftime("%m%d%y_%H%M%S")
+    file = open(file_name, "x", encoding="utf-8")
+    postnum = 0
+
+    #get number of posts botted
+    file.write("Successfully retrieved " + str(len(linklist)) + " posts!" + "\n")
+
     for x in range(len(linklist)):
+        postnum += 1
     # gets list of post links
         driver.get(linklist[x])
 
@@ -92,11 +107,19 @@ def create_data_captions():
         posttext = get_bio()
 
         #prints caption text and writes them to file
-        print(posttext + "\nLink: " + linklist[x] + "\n" + "=================")
-        file.write(posttext + "\nLink: " + linklist[x] + "\n" + "=================\n")
-    pass
+        print(str(postnum) + "/" + totalpost + "\n" + posttext + "\nLink: " + linklist[x] + "\n" + "=================")
+        file.write(str(postnum) + "/" + totalpost + "\n" + posttext + "\nLink: " + linklist[x] + "\n" + "=================\n")
+    file.close
+
+    #deletes file if empty
+    file = open(file_name, "rt", encoding="utf-8")
+    if(file.read() == ""):
+        file.close
+        os.remove(file_name)
+    
 
 def scroll_bottom():
+
     SCROLL_PAUSE_TIME = 3
 
     # Get scroll height
@@ -117,7 +140,9 @@ def scroll_bottom():
         last_height = new_height
 
 def botting(username, password, page, first, second):
+    #setting driver selenium is running off of and initializing some variables used across the methods
     global driver
+    global totalpost
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
     driver.delete_all_cookies()
 
@@ -129,11 +154,15 @@ def botting(username, password, page, first, second):
     #login button
     driver.find_element(By.XPATH, "/html/body/div[1]/section/main/div/div/div[1]/div/form/div/div[3]/button").click()
     time.sleep(3)
-    #save login info? - not now
+    #save login info? - not now (USUALLY DOESNT WORK ON FIRST RUN)
     driver.find_element(By.CSS_SELECTOR, ".sqdOP.yWX7d.y3zKF").click()
     time.sleep(3)
-    #scroll then get all posts
 
+    #get total number of posts
+    totalpost = WebDriverWait(driver, 60).until(EC.visibility_of_element_located((By.CSS_SELECTOR, "span.g47SY"))).text
+    print(totalpost)
+
+    #scroll then get all posts
     scroll_bottom()
 
     print(linklist)
@@ -144,7 +173,9 @@ def botting(username, password, page, first, second):
     driver.quit()
 
 def botting_captions(username, password, page):
+    #setting driver selenium is running off of and initializing some variables used across the methods
     global driver
+    global totalpost
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
     driver.delete_all_cookies()
 
@@ -156,11 +187,15 @@ def botting_captions(username, password, page):
     #login button
     driver.find_element(By.XPATH, "/html/body/div[1]/section/main/div/div/div[1]/div/form/div/div[3]/button").click()
     time.sleep(3)
-    #save login info? - not now
+    #save login info? - not now (USUALLY DOESNT WORK ON FIRST RUN)
     driver.find_element(By.CSS_SELECTOR, ".sqdOP.yWX7d.y3zKF").click()
     time.sleep(3)
-    #scroll then get all posts
+    
+    #get total number of posts
+    totalpost = WebDriverWait(driver, 60).until(EC.visibility_of_element_located((By.CSS_SELECTOR, "span.g47SY"))).text
+    print(totalpost)
 
+    #scroll then get all posts
     scroll_bottom()
 
     print(linklist)
@@ -170,3 +205,5 @@ def botting_captions(username, password, page):
     #closes chrome
     driver.quit()
 
+def get_filename():
+    return file_name
